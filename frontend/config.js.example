@@ -1,0 +1,2 @@
+// For a hosted frontend you can add <script src="config.js"></script> BEFORE app.js:
+// globalThis.PODCAST_API_URL = 'https://YOUR-API-URL';
