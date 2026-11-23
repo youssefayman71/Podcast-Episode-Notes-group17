@@ -1,29 +1,106 @@
-# Podcast Episode Notes — Phase 2 implementation candidate
+# Podcast Episode Notes — Phase 2
 
-Group 17 | Youssef: Discovery; Steven: Notes; Anas: Library/Identity. This is starter implementation to test, develop and adapt—not proof of final deployment or individual contribution.
+Cloud Computing Project — Group 17
 
-## Local quick start
+**Team members:**
+- Youssef — Episode Discovery
+- Steven — Notes Management
+- Anas — Library and Authentication
 
-**Prerequisites:** Node.js 22+, npm, Git, browser. Inside `backend/`: `npm install`; copy `.env.example` to `.env`; change `AUTH_SECRET` to a randomly generated string (32+ characters); `npm start`. Serve `frontend/` on port 8080 using `npx http-server frontend -p 8080` from the repository root (or `python -m http.server 8080 --directory frontend`). Open `http://localhost:8080`. You may also run with two VS Code terminals.
+## Project Overview
 
-**Flow:** Register → sign in → search iTunes → import + save → create timestamped note → add a tag → mark note reviewed → finish listening. Other users cannot access your notes. Admin moderation is backend-enforced. To create a test admin locally, register a separate account, then run `node src/promote-admin.js admin@example.com` in `backend/` while using the same database; sign in again. Do not expose admin provisioning to the public API.
+Podcast Episode Notes is a web application where users can search for podcast episodes, save them to their library, and create timestamped notes while listening.
 
-**Persistence:** local SQLite via Node 22 `node:sqlite` (may show an experimental warning). Cloud target uses DynamoDB with `STORE=dynamo`. Do not commit `.db` files or `.env`.
+Users can also organize notes using tags, track their listening progress, and search their saved notes. An administrator can approve or block imported episodes.
 
-**Cloud:** `docs/DEPLOY_FLOCI.md` is the deployment sequence. Floci is local/emulated AWS, so `localhost:4566` is not publicly accessible; a public HTTPS frontend/API requires another approved hosting path or actual AWS. Verify with your tutor what counts as a deployed demonstration. The deployment is **not already completed** by this ZIP.
+## Technologies Used
 
-**Evidence:** `docs/REPORT_DRAFT.docx` (generated separately) and `docs/security-test-results.csv`. Fill in *real* URLs/screenshots/tests/commits after building and deploying.
+- Node.js and Express — Backend API
+- HTML, CSS, JavaScript — Frontend
+- Docker and Floci — Local AWS environment
+- AWS Lambda — Backend functions
+- Amazon API Gateway — API routing
+- Amazon DynamoDB — Database
+- Amazon S3 — Frontend hosting
+- AWS IAM — Access permissions
+- Amazon CloudWatch — Logging
+- iTunes Search API — Podcast discovery
 
-## Suggested ownership and branch names
+## Project Structure
 
-- `feature/youssef-discovery`: discovery UI, import eligibility, upstream API handling, tests and dedicated Lambda.
-- `feature/steven-notes`: timestamped note UI, note workflow, note storage and tests and dedicated Lambda.
-- `feature/anas-library`: authentication, saved episodes, progress, tags, stats, and dedicated Lambda.
+- `backend/` — Backend API, authentication, and Lambda code
+- `frontend/` — Website files
+- `infra/` — Infrastructure scripts and configuration
 
-## Limitations you must resolve
+## Local Setup
 
-- No public deployment, production HTTPS, real database backup, CloudWatch monitoring, or end-to-end security verification has been performed here.
-- This teaching-scale backend uses straightforward DynamoDB full scans and a homemade HMAC session implementation to keep the code approachable. For production: replace it with a managed identity provider (your original proposal named Supabase Auth), server-side revocation/refresh, DynamoDB queries with GSIs, robust rate limits, audit trails, and atomic database constraints/transactions.
-- Current local registration permits listener only. Admin provisioning is a trusted local operator action, not public signup.
-- iTunes discovery search needs internet connectivity and a working upstream response.
-- Some Node package versions and Floci Lambda compatibility may require adjustment after a real local installation.
+1. Install Node.js, npm, Docker Desktop, and Floci.
+2. Open the project in VS Code.
+3. Open a terminal inside `backend/`.
+4. Run `npm install`.
+5. Copy `.env.example` to `.env`.
+6. Set a secure `AUTH_SECRET` in `.env`.
+7. Run `npm start` to start the local backend.
+
+For the local frontend, run this command from the project root:
+
+```bash
+npx http-server frontend -p 8080
+```
+
+Open `http://localhost:8080` in your browser.
+
+The local backend uses SQLite by default. The Floci deployment uses DynamoDB.
+
+## Floci Deployment
+
+The application was deployed and tested using Floci, a local AWS emulator running through Docker.
+
+The deployment includes three Lambda functions:
+
+- `podcast-discovery-lambda` — Episode search, import, and moderation
+- `podcast-notes-lambda` — Timestamped notes and review status
+- `podcast-library-lambda` — Authentication, library, tags, and listening progress
+
+API Gateway connects the frontend to these functions. DynamoDB stores the application data, and CloudWatch records API activity.
+
+The frontend is hosted in the S3 bucket `podcast-notes-web`.
+
+**Frontend URL:**
+
+http://localhost:4566/podcast-notes-web/index.html
+
+**Floci Dashboard:**
+
+http://localhost:4500
+
+Docker and Floci must be running to access these local URLs. They are not public internet addresses.
+
+Additional deployment instructions are in `docs/DEPLOY_FLOCI.md`.
+
+## Features Tested
+
+- User registration and login
+- Search for episodes using iTunes
+- Import and save episodes
+- View and manage saved episodes
+- Create, search, update, and delete timestamped notes
+- Mark notes as reviewed
+- Create and delete tags
+- Track listening progress
+- Administrator approval and blocking of episodes
+- Authentication and user access restrictions
+
+## Security
+
+The application uses password hashing and signed authentication tokens. User data is protected by backend authorization checks, and administrator actions require an administrator account.
+
+The three Lambda functions have separate IAM roles and policies.
+
+Environment files containing secrets are excluded from Git.
+
+## Limitations
+
+The deployment runs locally using Floci and is not publicly hosted. The application also uses a basic DynamoDB data model and a custom token-based authentication system intended for this project.
+
+The iTunes search feature requires an internet connection.
